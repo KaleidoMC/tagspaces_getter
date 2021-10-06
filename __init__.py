@@ -44,10 +44,10 @@ class Tags:
 				jo["tags"].append(tag)
 		else:
 			jo = {}
+			jo["tags"] = [ tag ]
 			jo["appName"] = appName
 			jo["appVersion"] = appVersion
 			jo["lastUpdated"] = time()
-			jo["tags"] = [ tag ]
 		
 		tag["title"] = tagDef.title
 		tag["color"] = tagDef.color
@@ -59,8 +59,26 @@ class Tags:
 		if tagDef.title not in self.tags:
 			self.tags.append(tagDef.title)
 	
+	def remove(self, title):
+		if title not in self.tags:
+			return
+		jo = self.__getJO();
+		tag = None
+		for o in jo["tags"]:
+			if o["title"] == title:
+				tag = o
+				break
+		if tag == None:
+			return
+		jo["tags"].remove(tag)
+		with self.path.open(mode="w") as f:
+			json.dump(jo, f)
+			self.tags.remove(title)
+	
 	def __getJO(self):
 		jo = self.path.read_bytes();
+		if len(jo) == 0:
+			return { "tags": [] }
 		if jo[:3] == codecs.BOM_UTF8:
 			jo = jo[3:]
 		jo = jo.decode("utf-8")
